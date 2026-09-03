@@ -46,6 +46,17 @@ app.include_router(api_router, prefix="/api/v1")
 # A14: Register global exception handlers
 register_exception_handlers(app)
 
+# Root greeting and documentation entrypoint
+@app.get("/", tags=["Root"])
+async def root():
+    return {
+        "message": "Welcome to CropShift API",
+        "status": "online",
+        "version": "1.0.0",
+        "docs_url": "/docs",
+        "health_check": "/health"
+    }
+
 # Route GET /health directly at the root, as per the shared API contract and requirements
 @app.get("/health", tags=["Health"])
 async def root_health_check():
