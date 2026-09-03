@@ -111,6 +111,15 @@ def register_exception_handlers(app: FastAPI) -> None:
         logger.error(
             "Unhandled exception on %s:\n%s", request.url, traceback.format_exc()
         )
+        exc_str = str(exc)
+        if "OperationalError" in exc_str or "connection" in exc_str.lower() and "failed" in exc_str.lower():
+            return _json(
+                _error_envelope(
+                    INTERNAL_ERROR,
+                    "Database connection failed. Please ensure DATABASE_URL is configured with your Render PostgreSQL connection string.",
+                ),
+                status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
         return _json(
             _error_envelope(
                 INTERNAL_ERROR,
