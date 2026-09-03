@@ -1,0 +1,59 @@
+# =============================================================================
+# CropShift — Render Infrastructure Blueprint (render.yaml)
+# =============================================================================
+# Deploys:
+#   1. Managed PostgreSQL database with PostGIS support
+#   2. FastAPI backend web service (Python runtime on 0.0.0.0:$PORT)
+#   3. React/Vite frontend static site (SPA routing rewrite)
+# =============================================================================
+
+databases:
+  - name: cropshift-db
+    databaseName: cropshift
+    user: cropshift_user
+    plan: free
+    region: oregon
+
+services:
+  # ---------------------------------------------------------------------------
+  # 1. FastAPI Backend Web Service
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: cropshift-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    region: oregon
+    buildCommand: pip install -r requirements.txt && python -m app.database.init_db && python -m app.database.seed
+    startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: cropshift-db
+          property: connectionString
+      - key: SECRET_KEY
+        generateValue: true
+      - key: CORS_ORIGINS
+        value: http://localhost:5173,http://127.0.0.1:5173,https://cropshift-web.onrender.com
+
+  # ---------------------------------------------------------------------------
+  # 2. React + Vite Frontend Static Site
+  # ---------------------------------------------------------------------------
+  - type: web
+    name: cropshift-web
+    runtime: static
+    rootDir: frontend
+    plan: free
+    region: oregon
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://cropshift-api.onrender.com
+      - key: VITE_USE_MOCKS
+        value: "false"
