@@ -1,13 +1,23 @@
-import app.patch_bcrypt
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
-from app.config import settings
-from app.api.router import api_router
-from app.api.errors import register_exception_handlers
+from contextlib import asynccontextmanager
+import logging
+
+logger = logging.getLogger("cropshift")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Ensure tables exist and reference data is populated on application startup
+    try:
+        from app.database.seed import run_seed
+        run_seed()
+        logger.info("Database schema and seed reference data verified on startup.")
+    except Exception as e:
+        logger.warning("Database startup init deferred: %s", e)
+    yield
 
 app = FastAPI(
     title="CropShift API",
-    version="1.0.0"
+    version="1.0.0",
+    lifespan=lifespan
 )
 
 # Configure CORS

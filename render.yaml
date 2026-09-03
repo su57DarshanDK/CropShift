@@ -24,7 +24,7 @@ services:
     rootDir: backend
     plan: free
     region: oregon
-    buildCommand: pip install -r requirements.txt && python -m app.database.init_db && python -m app.database.seed
+    buildCommand: pip install -r requirements.txt
     startCommand: uvicorn app.main:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /health
     envVars:
