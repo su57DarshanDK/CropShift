@@ -183,15 +183,16 @@ export default function RecommendationPage() {
     setFormSubmitting(true);
     setErrorMsg(null);
     try {
+      const isWaterAvail = waterAvailability === 'Available' || waterAvailability === true || waterAvailability === 'true';
       const area = parseFloat(landAreaAcre) || 1.0;
       let activeFarmId: number;
 
       if (farm && farm.id) {
         const updated = await updateFarm(farm.id, {
-          district,
-          state,
+          district: district.trim(),
+          state: state.trim(),
           soil_type: soilType,
-          water_availability: waterAvailability,
+          water_availability: isWaterAvail,
           land_area_acre: area,
           current_crop: currentCrop,
         });
@@ -199,10 +200,10 @@ export default function RecommendationPage() {
         activeFarmId = updated.id;
       } else {
         const created = await createFarm({
-          district,
-          state,
+          district: district.trim(),
+          state: state.trim(),
           soil_type: soilType,
-          water_availability: waterAvailability,
+          water_availability: isWaterAvail,
           land_area_acre: area,
           current_crop: currentCrop,
         });
