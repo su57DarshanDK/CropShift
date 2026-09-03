@@ -1,5 +1,16 @@
+import app.patch_bcrypt
 from contextlib import asynccontextmanager
 import logging
+import os
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+from app.config import settings
+from app.api.router import api_router
+from app.api.errors import register_exception_handlers
 
 logger = logging.getLogger("cropshift")
 
@@ -34,10 +45,6 @@ app.include_router(api_router, prefix="/api/v1")
 
 # A14: Register global exception handlers
 register_exception_handlers(app)
-
-import os
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 
 # Route GET /health directly at the root, as per the shared API contract and requirements
 @app.get("/health", tags=["Health"])
