@@ -1,10 +1,16 @@
 import axios, { AxiosError } from 'axios';
 import type { AppError, AppErrorResponse } from '../types/api';
 
-const apiBase = 
-  (import.meta.env.VITE_API_URL as string) || 
-  (import.meta.env.VITE_API_BASE_URL as string) || 
-  'http://localhost:8000';
+const getApiBase = (): string => {
+  if (import.meta.env.VITE_API_URL) return (import.meta.env.VITE_API_URL as string).replace(/\/+$/, '');
+  if (import.meta.env.VITE_API_BASE_URL) return (import.meta.env.VITE_API_BASE_URL as string).replace(/\/+$/, '');
+  if (typeof window !== 'undefined' && window.location.hostname.includes('onrender.com')) {
+    return 'https://sql-x.onrender.com';
+  }
+  return 'http://localhost:8000';
+};
+
+const apiBase = getApiBase();
 
 const apiClient = axios.create({
   baseURL: apiBase,
